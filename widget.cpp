@@ -15,11 +15,23 @@ Widget::~Widget()
     delete ui;
 }
 
+/*
 void Widget::clearBtn(){
     ui->pbCoffee->setEnabled(false);
     ui->pbMilk->setEnabled(false);
     ui->pbTea->setEnabled(false);
 }
+*/
+
+
+void Widget::clearBtn(){
+    QVBoxLayout *layout = ui->loProduct;
+    for (int i = 0; i < layout->count(); i++){
+        QPushButton *btn = qobject_cast<QPushButton*>(layout->itemAt(i)->widget());
+        btn->setEnabled(false);
+    }
+}
+
 
 void Widget::increaseMoney(int coin){
     if(money + coin >= 0){
@@ -28,10 +40,24 @@ void Widget::increaseMoney(int coin){
     }
 }
 
+/*
 void Widget::enableBtn(){
     ui->pbCoffee->setEnabled(money >= coffee);
     ui->pbMilk->setEnabled(money >= milk);
     ui->pbTea->setEnabled(money >= tea);
+}
+*/
+
+void Widget::enableBtn(){
+    QVBoxLayout *layout = ui->loProduct;
+    for (int i = 0; i < layout->count(); i++){
+        QPushButton *btn = qobject_cast<QPushButton*>(layout->itemAt(i)->widget());
+        QString str = btn->text();
+        int startIndex = str.indexOf('(');
+        int endIndex = str.indexOf(')');
+        int price = str.mid(startIndex + 1, endIndex - startIndex - 1).toInt();
+        btn->setEnabled(money >= price);
+    }
 }
 
 void Widget::clickedBtn(int coin){
@@ -40,16 +66,21 @@ void Widget::clickedBtn(int coin){
 }
 
 void Widget::returnCoin(){
-    QMessageBox mb;
     int coins[4] = {coin_500, coin_100, coin_50, coin_10};
     std::map<int, int> rtCoins;
     for (int i = 0; i < 4; i++){
-        while(money >= coins[i]){
-            money -= coins[i];
-            rtCoins[coins[i]] += 1;
-        }
+        rtCoins[coins[i]] += (money / coins[i]);
+        money %= coins[i];
     }
     ui->lcdNumber->display(money);
+
+    QString message;
+    for (auto &pair : rtCoins) {
+        if (pair.second > 0) {
+            message += QString::number(pair.first) + "coin : " + QString::number(pair.second) + "pcs\n";
+        }
+    }
+    QMessageBox::information(this, "Change", message);
 }
 
 void Widget::on_pb10_clicked()
