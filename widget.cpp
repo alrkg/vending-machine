@@ -23,7 +23,6 @@ void Widget::clearBtn(){
 }
 */
 
-
 void Widget::clearBtn(){
     QVBoxLayout *layout = ui->loProduct;
     for (int i = 0; i < layout->count(); i++){
@@ -31,7 +30,6 @@ void Widget::clearBtn(){
         btn->setEnabled(false);
     }
 }
-
 
 void Widget::increaseMoney(int coin){
     if(money + coin >= 0){
@@ -65,10 +63,11 @@ void Widget::clickedBtn(int coin){
     enableBtn();
 }
 
+/*
 void Widget::returnCoin(){
     int coins[4] = {coin_500, coin_100, coin_50, coin_10};
     std::map<int, int> rtCoins;
-    for (int i = 0; i < 4; i++){
+    for (int i = 0; i < (sizeof(coins) / sizeof(int)); i++){
         rtCoins[coins[i]] += (money / coins[i]);
         money %= coins[i];
     }
@@ -82,18 +81,38 @@ void Widget::returnCoin(){
     }
     QMessageBox::information(this, "Change", message);
 }
+*/
+
+void Widget::returnCoin(){
+    QVBoxLayout *layout = ui->loCoin;
+    std::map<int, int, std::greater<int>> coins;
+    for (int i = 0; i < layout->count(); i++){
+        QPushButton *btn = qobject_cast<QPushButton*>(layout->itemAt(i)->widget());
+        coins[btn->text().toInt()] = 0;
+    }
+
+    QString message;
+    for (auto &pair : coins) {
+        int cost = pair.first;
+        coins[cost] = (money / cost);
+        money %= cost;
+        if (pair.second > 0) {
+            message += QString::number(pair.first) + "coin : " + QString::number(pair.second) + "pcs\n";
+        }
+    }
+    ui->lcdNumber->display(money);
+    QMessageBox::information(this, "Change", message);
+}
 
 void Widget::on_pb10_clicked()
 {
     clickedBtn(coin_10);
 }
 
-
 void Widget::on_pb50_clicked()
 {
     clickedBtn(coin_50);
 }
-
 
 void Widget::on_pb100_clicked()
 {
@@ -106,24 +125,20 @@ void Widget::on_pb500_clicked()
     clickedBtn(coin_500);
 }
 
-
 void Widget::on_pbCoffee_clicked()
 {
     clickedBtn(-coffee);
 }
-
 
 void Widget::on_pbMilk_clicked()
 {
     clickedBtn(-milk);
 }
 
-
 void Widget::on_pbTea_clicked()
 {
     clickedBtn(-tea);
 }
-
 
 void Widget::on_pbReset_clicked()
 {
